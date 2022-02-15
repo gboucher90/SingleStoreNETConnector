@@ -35,13 +35,13 @@ jobs:
       - checkout
       - setup-environment-ubuntu
       - run:
-          name: Build connector
-          command: |
-            dotnet build -c Release
-      - run:
           name: Start SingleStore for SideBySide tests
           command: |
             ./.circleci/setup_cluster.sh
+      - run:
+          name: Build connector
+          command: |
+            dotnet build -c Release
       - run:
           name: Copy config file for SideBySide tests
           command: |
@@ -72,19 +72,19 @@ workflows:
   build_and_test:
     jobs:
       - test-ubuntu:
-          name: Test with cluster-in-a-box 7.6
+          name: Test 7.6 cluster-in-a-box
           matrix:
             parameters:
               singlestore_image:
                 - singlestore/cluster-in-a-box:centos-7.6.9-7d7e13942a-4.0.3-1.13.4
       - test-ubuntu:
-          name: Test with cluster-in-a-box 7.5
+          name: Test 7.5 cluster-in-a-box
           matrix:
             parameters:
               singlestore_image:
                 - singlestore/cluster-in-a-box:centos-7.5.12-3112a491c2-4.0.0-1.12.5
       - test-ubuntu:
-          name: Test with cluster-in-a-box 7.3
+          name: Test 7.3 cluster-in-a-box
           matrix:
             parameters:
               singlestore_image:
