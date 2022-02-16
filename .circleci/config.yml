@@ -4,9 +4,12 @@ parameters:
     type: string
     default: "1.0.0"
 
+orbs:
+  win: circleci/windows@2.4.0
+
 commands:
   setup-environment-ubuntu:
-    description: "Setup the linux environment"
+    description: Setup Linux environment
     steps:
       - run:
           name: Install .NET Core 6.0
@@ -22,6 +25,43 @@ commands:
             dotnet --info
 
 jobs:
+  test-windows:
+    executor: win/default
+    parameters:
+      target_framework:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: Build project binaries
+          command: |
+            pip install pymysql
+            dotnet.exe build -f << parameters.target_framework >>
+      - run:
+          name: Start SingleStore for SideBySide tests
+          command: python.exe .circleci\s2ms_cluster.py
+      - run:
+          name: "Print Working Directory"
+          command: pwd
+      - run:
+          name: Unit tests
+          command: |
+            cd tests\MySqlConnector.Tests
+            dotnet.exe test -f << parameters.target_framework >> -c Release
+            cd ..\..
+      - run:
+          name: Conformance tests
+          command: |
+            cd tests/Conformance.Tests/
+            dotnet test -f << parameters.target_framework >> -c Release
+            cd ..\..
+      - run:
+          name: SideBySide tests
+          command: |
+            cd tests\SideBySide
+            dotnet test -f << parameters.target_framework >> -c Release
+            cd ..\..
+
   test-ubuntu:
     parameters:
       singlestore_image:
@@ -46,6 +86,7 @@ jobs:
           name: Copy config file for SideBySide tests
           command: |
             cp ./.circleci/SideBySide/config.json tests/SideBySide/config.json
+            sed -i "s|SINGLESTORE_HOST|127.0.0.1|g" tests/SideBySide/config.json
             sed -i "s|SQL_USER_PASSWORD|${SQL_USER_PASSWORD}|g" tests/SideBySide/config.json
             sed -i "s|SQL_USER_NAME|root|g" tests/SideBySide/config.json
       - run:
@@ -71,21 +112,27 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - test-ubuntu:
-          name: Test 7.6 cluster-in-a-box
+      # - test-ubuntu:
+      #     name: Test 7.6 cluster-in-a-box
+      #     matrix:
+      #       parameters:
+      #         singlestore_image:
+      #           - singlestore/cluster-in-a-box:centos-7.6.9-7d7e13942a-4.0.3-1.13.4
+      # - test-ubuntu:
+      #     name: Test 7.5 cluster-in-a-box
+      #     matrix:
+      #       parameters:
+      #         singlestore_image:
+      #           - singlestore/cluster-in-a-box:centos-7.5.12-3112a491c2-4.0.0-1.12.5
+      # - test-ubuntu:
+      #     name: Test 7.3 cluster-in-a-box
+      #     matrix:
+      #       parameters:
+      #         singlestore_image:
+      #           - singlestore/cluster-in-a-box:centos-7.3.13-761e3259b3-3.2.11-1.11.9
+      - test-windows:
+          name: Test on Win with s2ms
           matrix:
             parameters:
-              singlestore_image:
-                - singlestore/cluster-in-a-box:centos-7.6.9-7d7e13942a-4.0.3-1.13.4
-      - test-ubuntu:
-          name: Test 7.5 cluster-in-a-box
-          matrix:
-            parameters:
-              singlestore_image:
-                - singlestore/cluster-in-a-box:centos-7.5.12-3112a491c2-4.0.0-1.12.5
-      - test-ubuntu:
-          name: Test 7.3 cluster-in-a-box
-          matrix:
-            parameters:
-              singlestore_image:
-                - singlestore/cluster-in-a-box:centos-7.3.13-761e3259b3-3.2.11-1.11.9
+              target_framework:
+                - net5.0
