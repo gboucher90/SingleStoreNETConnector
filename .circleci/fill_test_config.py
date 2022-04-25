@@ -9,7 +9,6 @@ NET_FRAMEWORKS = ["net452", "net461", "net472", "netcoreapp3.1", "net5.0", "net6
 
 
 if __name__ == "__main__":
-
     home_dir = os.getenv("HOMEPATH")
     if home_dir is None:
         home_dir = os.getenv("HOME")
