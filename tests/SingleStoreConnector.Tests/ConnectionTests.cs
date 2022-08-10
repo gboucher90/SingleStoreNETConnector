@@ -27,6 +27,15 @@ public class ConnectionTests : IDisposable
 		}
 
 		[Fact]
+		public void OlyaTest()
+		{
+			using (var connection = new SingleStoreConnection(m_csb.ConnectionString))
+			{
+				connection.Open();
+				Console.WriteLine(connection.ServerVersion.ToString());
+			}
+		}
+		[Fact]
 		public void PooledConnectionIsReturnedToPool()
 		{
 			Assert.Equal(0, m_server.ActiveConnections);
