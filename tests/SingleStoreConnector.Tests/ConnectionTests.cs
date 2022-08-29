@@ -56,7 +56,7 @@ public class ConnectionTests : IDisposable
 				await connection.OpenAsync();
 				Assert.Equal(1, m_server.ActiveConnections);
 
-				Assert.Equal(m_server.ServerVersion, connection.ServerVersion);
+				Assert.Equal(m_server.ServerVersion, connection.MySqlCompatServerVersion);
 				await connection.CloseAsync();
 				Assert.Equal(1, m_server.ActiveConnections);
 			}
@@ -74,7 +74,7 @@ public class ConnectionTests : IDisposable
 			await connection.OpenAsync();
 			Assert.Equal(1, m_server.ActiveConnections);
 
-			Assert.Equal(m_server.ServerVersion, connection.ServerVersion);
+			Assert.Equal(m_server.ServerVersion, connection.MySqlCompatServerVersion);
 			connection.Close();
 
 			await WaitForConditionAsync(0, () => m_server.ActiveConnections);
