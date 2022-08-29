@@ -37,7 +37,7 @@ public class ConnectionTests : IDisposable
 				connection.Open();
 				Assert.Equal(1, m_server.ActiveConnections);
 
-				Assert.Equal(m_server.ServerVersion, connection.ServerVersion);
+				Assert.Equal(m_server.ServerVersion, connection.MySqlCompatServerVersion);
 				connection.Close();
 				Assert.Equal(1, m_server.ActiveConnections);
 			}

@@ -491,6 +491,8 @@ public sealed class SingleStoreConnection : DbConnection, ICloneable
 
 	public override string ServerVersion => Session.S2ServerVersion.OriginalString;
 
+	public string MySqlCompatServerVersion => Session.MySqlCompatVersion.OriginalString;
+
 	/// <summary>
 	/// The connection ID from SingleStore Server.
 	/// </summary>
